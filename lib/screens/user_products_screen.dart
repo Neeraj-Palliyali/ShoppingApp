@@ -5,6 +5,8 @@ import 'package:ShoppingApp/widgets/app_drawer.dart';
 
 import 'package:ShoppingApp/providers/products.dart';
 
+import 'package:ShoppingApp/screens/edit_product_screen.dart';
+
 class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
 
@@ -15,7 +17,13 @@ class UserProductsScreen extends StatelessWidget {
       drawer: AppDrawer(),
       appBar: AppBar(
         title: Text("Your Products"),
-        actions: <Widget>[IconButton(icon: Icon(Icons.add), onPressed: null)],
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context).pushNamed(EditProductScreen.routeName);
+              })
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(8),

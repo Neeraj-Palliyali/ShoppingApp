@@ -1,8 +1,10 @@
-import 'package:ShoppingApp/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ShoppingApp/widgets/app_drawer.dart';
 import 'package:ShoppingApp/widgets/productsGrid.dart';
 import 'package:ShoppingApp/widgets/badge.dart';
 import 'package:ShoppingApp/screens/cart_screen.dart';
+
 import 'package:ShoppingApp/providers/cart.dart';
 import 'package:provider/provider.dart';
 

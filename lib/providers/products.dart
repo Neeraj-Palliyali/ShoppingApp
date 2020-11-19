@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import 'package:ShoppingApp/providers/product.dart';
 
@@ -52,26 +54,29 @@ class Products with ChangeNotifier {
     return _items.where((prodItem) => prodItem.isFavorite).toList();
   }
 
-  // void showFavoritesOnly(){
-  //   _showFavoritesOnly=true;
-  //   notifyListeners();
-  // }
-
-  // void showAll(){
-  //   _showFavoritesOnly=false;
-  //   notifyListeners();
-  // }
-
-  void addProduct(Product product) {
-    final newProduct = Product(
-        id: DateTime.now().toString(),
-        title: product.title,
-        description: product.description,
-        imageUrl: product.imageUrl,
-        price: product.price);
-    // _items.add(value);
-    _items.add(newProduct);
-    notifyListeners();
+  Future<void> addProduct(Product product) {
+    const url = "https://shoppingapp-cd7d2.firebaseio.com/products.json";
+    return http
+        .post(
+      url,
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'price': product.price,
+        'isFavorite': product.isFavorite
+      }),
+    )
+        .then((response) {
+      final newProduct = Product(
+          id: json.decode(response.body)['name'],
+          title: product.title,
+          description: product.description,
+          imageUrl: product.imageUrl,
+          price: product.price);
+      _items.add(newProduct);
+      notifyListeners();
+    });
   }
 
   Product findById(String id) {

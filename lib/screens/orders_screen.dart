@@ -4,8 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:ShoppingApp/providers/orders.dart' show Orders;
 import 'package:provider/provider.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
   static const routeName = '/orders';
+
+  @override
+  _OrdersScreenState createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    setState(() {
+      _isLoading = true;
+    });
+    Provider.of<Orders>(context, listen: false)
+        .fetchAndSetOrders()
+        .then((value) => setState(() {
+              _isLoading = false;
+            }));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +34,12 @@ class OrdersScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Your Orders"),
       ),
-      body: ListView.builder(
-        itemCount: orderData.order.length,
-        itemBuilder: (ctx, i) => OrderItem(orderData.order[i]),
-      ),
+      body: _isLoading
+          ? CircularProgressIndicator()
+          : ListView.builder(
+              itemCount: orderData.order.length,
+              itemBuilder: (ctx, i) => OrderItem(orderData.order[i]),
+            ),
       drawer: AppDrawer(),
     );
   }

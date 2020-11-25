@@ -9,8 +9,9 @@ class Products with ChangeNotifier {
   List<Product> _items = [];
 
   final String authToken;
+  final String userId;
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     return [..._items];
@@ -20,23 +21,35 @@ class Products with ChangeNotifier {
     return _items.where((prodItem) => prodItem.isFavorite).toList();
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url =
-        "https://shoppingapp-cd7d2.firebaseio.com/products.json?auth=$authToken";
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterBy =
+        filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+
+    var url =
+        'https://shoppingapp-cd7d2.firebaseio.com/products.json?auth=$authToken&$filterBy';
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if (extractedData == null) {
         return null;
       }
+      url =
+          "https://shoppingapp-cd7d2.firebaseio.com/userFavorites/$userId.json?auth=$authToken";
+      final favouriteResponse = await http.get(url);
+      final favoriteData = json.decode(favouriteResponse.body);
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
-        loadedProducts.add(Product(
+        loadedProducts.add(
+          Product(
             id: prodId,
             title: prodData['title'],
             description: prodData['description'],
             imageUrl: prodData['imageUrl'],
-            price: prodData['price']));
+            price: prodData['price'],
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false,
+          ),
+        );
       });
       _items = loadedProducts;
       notifyListeners();
@@ -56,6 +69,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
+          'creatorId': userId
         }),
       );
 

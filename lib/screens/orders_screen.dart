@@ -35,7 +35,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
         title: Text("Your Orders"),
       ),
       body: _isLoading
-          ? CircularProgressIndicator()
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
           : ListView.builder(
               itemCount: orderData.order.length,
               itemBuilder: (ctx, i) => OrderItem(orderData.order[i]),

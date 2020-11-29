@@ -107,7 +107,7 @@ class _AuthCardState extends State<AuthCard>
   var _isLoading = false;
   final _passwordController = TextEditingController();
   AnimationController _controller;
-  Animation<Size> _heightAnimation;
+  Animation<Offset> _slideAnimation;
   Animation<double> _opacityAnimation;
 
   @override
@@ -117,11 +117,10 @@ class _AuthCardState extends State<AuthCard>
       vsync: this,
       duration: Duration(milliseconds: 300),
     );
-    _heightAnimation = Tween<Size>(
-            begin: Size(double.infinity, 260), end: Size(double.infinity, 320))
+    _slideAnimation = Tween<Offset>(begin: Offset(0, -1.5), end: Offset(0, 0))
         .animate(
             CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
-    _heightAnimation.addListener(() => setState(() {}));
+    _slideAnimation.addListener(() => setState(() {}));
     _opacityAnimation = Tween(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
   }
@@ -244,34 +243,46 @@ class _AuthCardState extends State<AuthCard>
                     _authData['email'] = value;
                   },
                 ),
-                FadeTransition(
-                  opacity: _opacityAnimation,
-                  child: TextFormField(
-                    decoration: InputDecoration(labelText: 'Password'),
-                    obscureText: true,
-                    controller: _passwordController,
-                    validator: (value) {
-                      if (value.isEmpty || value.length < 5) {
-                        return 'Password is too short!';
-                      }
-                    },
-                    onSaved: (value) {
-                      _authData['password'] = value;
-                    },
-                  ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                  controller: _passwordController,
+                  validator: (value) {
+                    if (value.isEmpty || value.length < 5) {
+                      return 'Password is too short!';
+                    }
+                  },
+                  onSaved: (value) {
+                    _authData['password'] = value;
+                  },
                 ),
                 if (_authMode == AuthMode.Signup)
-                  TextFormField(
-                    enabled: _authMode == AuthMode.Signup,
-                    decoration: InputDecoration(labelText: 'Confirm Password'),
-                    obscureText: true,
-                    validator: _authMode == AuthMode.Signup
-                        ? (value) {
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                          }
-                        : null,
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                    constraints: BoxConstraints(
+                      minHeight: _authMode == AuthMode.Signup ? 60 : 0,
+                      maxHeight: _authMode == AuthMode.Signup ? 120 : 0,
+                    ),
+                    child: FadeTransition(
+                      opacity: _opacityAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: TextFormField(
+                          enabled: _authMode == AuthMode.Signup,
+                          decoration:
+                              InputDecoration(labelText: 'Confirm Password'),
+                          obscureText: true,
+                          validator: _authMode == AuthMode.Signup
+                              ? (value) {
+                                  if (value != _passwordController.text) {
+                                    return 'Passwords do not match!';
+                                  }
+                                }
+                              : null,
+                        ),
+                      ),
+                    ),
                   ),
                 SizedBox(
                   height: 20,
